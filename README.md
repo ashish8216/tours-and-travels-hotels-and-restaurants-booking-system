@@ -3,6 +3,7 @@
 Laravel Intern Kartik 12 | 82 B Group
 
  setup 
+            
             composer update
 
             copy('.env.example', '.env')
