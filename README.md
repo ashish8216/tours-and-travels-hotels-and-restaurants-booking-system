@@ -2,16 +2,16 @@
 
 Laravel Intern Kartik 12 | 82 B Group
 
-setup
+ setup 
+            composer update
 
-composer update
+            copy('.env.example', '.env')
 
-copy('.env.example', '.env')
+            php artisan key:generate
 
-php artisan key:generate
+            php artisan migrate:fresh --seed
 
-php artisan migrate:fresh --seed
+            npm install
 
-npm install
-
-npm run build
+            npm run build
+        
