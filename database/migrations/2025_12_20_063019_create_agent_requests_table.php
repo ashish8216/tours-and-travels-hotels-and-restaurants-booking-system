@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('agent_requests', function (Blueprint $table) {
+            $table->id();
+             $table->string('business_name');
+            $table->string('owner_name');
+            $table->string('email');
+            $table->string('phone');
+            $table->enum('business_type', ['hotel', 'restaurant']);
+            $table->text('address')->nullable();
+            $table->text('message')->nullable();
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('agent_requests');
+    }
+};
