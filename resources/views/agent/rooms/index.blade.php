@@ -65,7 +65,7 @@
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="font-medium text-gray-800">₹{{ number_format($room->price_per_night) }}</span>
+                            <span class="font-medium text-gray-800">Rs.{{ number_format($room->price_per_night) }}</span>
                             <div class="text-sm text-gray-500">per night</div>
                         </td>
                         <td class="px-6 py-4">

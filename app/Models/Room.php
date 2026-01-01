@@ -32,4 +32,9 @@ class Room extends Model
     {
         return $this->hasOne(RoomImage::class)->where('is_primary', true);
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(RoomBooking::class);
+    }
 }

@@ -12,7 +12,10 @@ class RoomController extends Controller
 {
     public function index()
     {
-        $rooms = Room::where('agent_id', Auth::user()->id)->with('primaryImage')->paginate(10);
+        $rooms = Room::where('agent_id', Auth::user()->agent->id)
+            ->with('primaryImage')
+            ->paginate(10);
+
         return view('agent.rooms.index', compact('rooms'));
     }
 
@@ -30,9 +33,8 @@ class RoomController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Create room
         $room = Room::create([
-            'agent_id' => Auth::user()->id,
+            'agent_id' => Auth::user()->agent->id,
             'room_name' => $request->room_name,
             'price_per_night' => $request->price_per_night,
             'max_guests' => $request->max_guests,
@@ -43,7 +45,6 @@ class RoomController extends Controller
             'availability' => $request->availability,
         ]);
 
-        // Handle image uploads
         if ($request->hasFile('images')) {
             $order = 0;
             foreach ($request->file('images') as $image) {
@@ -52,7 +53,7 @@ class RoomController extends Controller
                 RoomImage::create([
                     'room_id' => $room->id,
                     'image_path' => $path,
-                    'is_primary' => $order === 0, // First image is primary
+                    'is_primary' => $order === 0,
                     'display_order' => $order++
                 ]);
             }
@@ -63,19 +64,17 @@ class RoomController extends Controller
 
     public function edit(Room $room)
     {
-        // Check authorization - ensure agent can only edit their own rooms
-        if ($room->agent_id !== Auth::user()->id) {
+        if ($room->agent_id !== Auth::user()->agent->id) {
             abort(403, 'Unauthorized action.');
         }
 
-        $room->load('images'); // Load images relationship
+        $room->load('images');
         return view('agent.rooms.edit', compact('room'));
     }
 
     public function update(Request $request, Room $room)
     {
-        // Check authorization
-        if ($room->agent_id !== Auth::user()->id) {
+        if ($room->agent_id !== Auth::user()->agent->id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -86,7 +85,6 @@ class RoomController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Update room
         $room->update([
             'room_name' => $request->room_name,
             'price_per_night' => $request->price_per_night,
@@ -98,7 +96,6 @@ class RoomController extends Controller
             'availability' => $request->availability,
         ]);
 
-        // Handle new image uploads
         if ($request->hasFile('images')) {
             $existingCount = $room->images()->count();
             $order = $existingCount;
@@ -120,37 +117,28 @@ class RoomController extends Controller
 
     public function destroy(Room $room)
     {
-        // Check authorization
-        if ($room->agent_id !== Auth::user()->id) {
+        if ($room->agent_id !== Auth::user()->agent->id) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Delete all room images from storage
         foreach ($room->images as $image) {
             Storage::disk('public')->delete($image->image_path);
         }
 
-        // Delete the room (this will cascade delete images due to foreign key constraint)
         $room->delete();
 
         return back()->with('success', 'Room deleted successfully');
     }
 
-    // New method: Delete a single image
     public function destroyImage(Room $room, RoomImage $image)
     {
-        // Check authorization
-        if ($room->agent_id !== Auth::user()->id || $image->room_id !== $room->id) {
+        if ($room->agent_id !== Auth::user()->agent->id || $image->room_id !== $room->id) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Delete the file from storage
         Storage::disk('public')->delete($image->image_path);
-
-        // Delete the image record
         $image->delete();
 
-        // If the deleted image was primary, make another image primary
         if ($image->is_primary) {
             $newPrimary = $room->images()->first();
             if ($newPrimary) {
@@ -161,18 +149,13 @@ class RoomController extends Controller
         return back()->with('success', 'Image deleted successfully!');
     }
 
-    // New method: Set image as primary
     public function setPrimaryImage(Room $room, RoomImage $image)
     {
-        // Check authorization
-        if ($room->agent_id !== Auth::user()->id || $image->room_id !== $room->id) {
+        if ($room->agent_id !== Auth::user()->agent->id || $image->room_id !== $room->id) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Set all images to not primary
         $room->images()->update(['is_primary' => false]);
-
-        // Set selected image as primary
         $image->update(['is_primary' => true]);
 
         return back()->with('success', 'Primary image updated successfully!');

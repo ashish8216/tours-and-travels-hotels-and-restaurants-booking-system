@@ -38,4 +38,10 @@ class Agent extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function roomBookings()
+    {
+        return $this->hasMany(RoomBooking::class);
+    }
+
 }

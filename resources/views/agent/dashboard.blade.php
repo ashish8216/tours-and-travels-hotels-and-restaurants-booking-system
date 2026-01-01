@@ -1,5 +1,8 @@
 @extends('agent.layout')
-
+@php
+    $agent = Auth::user()->agent;
+    $services = $agent?->business_type ?? [];
+@endphp
 @section('content')
 <!-- Welcome -->
 <div class="mb-8">
@@ -7,6 +10,7 @@
 </div>
 
 <!-- Stats Cards -->
+@if(in_array('hotel', $services))
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <div class="bg-white rounded-lg border border-gray-200 p-6">
         <div class="flex items-center">
@@ -56,6 +60,7 @@
         </div>
     </div>
 </div>
+@endif
 
 <!-- Recent Bookings -->
 <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -82,7 +87,7 @@
                     <td class="px-6 py-4">
                         <span class="px-3 py-1 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">Pending</span>
                     </td>
-                    <td class="px-6 py-4 font-medium text-gray-800">₹3,000</td>
+                    <td class="px-6 py-4 font-medium text-gray-800">Rs3,000</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4">
@@ -93,7 +98,7 @@
                     <td class="px-6 py-4">
                         <span class="px-3 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Confirmed</span>
                     </td>
-                    <td class="px-6 py-4 font-medium text-gray-800">₹2,500</td>
+                    <td class="px-6 py-4 font-medium text-gray-800">Rs.2,500</td>
                 </tr>
             </tbody>
         </table>

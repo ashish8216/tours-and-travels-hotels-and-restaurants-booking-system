@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,17 +8,22 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
+
+@php
+    $agent = Auth::user()->agent;
+    $services = $agent?->business_type ?? []; // ['hotel','restaurant','tour']
+@endphp
+
 <body class="bg-gray-50">
 
     <div class="flex min-h-screen" x-data="{ sidebarOpen: false }">
         <!-- Mobile sidebar backdrop -->
-        <div x-show="sidebarOpen" @click="sidebarOpen = false"
-             class="fixed inset-0 z-20 bg-black/50 md:hidden">
+        <div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 z-20 bg-black/50 md:hidden">
         </div>
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-               class="fixed md:static inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 md:translate-x-0 transition-transform duration-300">
+            class="fixed md:static inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 md:translate-x-0 transition-transform duration-300">
 
             <div class="h-full flex flex-col">
                 <!-- Logo -->
@@ -28,23 +34,79 @@
                 <!-- Navigation -->
                 <nav class="flex-1 p-4 space-y-1">
                     <a href="{{ url('/agent/dashboard') }}"
-                       class="flex items-center px-4 py-3 rounded-lg {{ request()->is('agent/dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
+                        class="flex items-center px-4 py-3 rounded-lg {{ request()->is('agent/dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
                         <i class="fas fa-home w-5 mr-3"></i>
                         <span>Dashboard</span>
                     </a>
+                    <!-- Conditional Links Based on Services -->
 
-                    <a href="{{ route('agent.rooms.index') }}"
-                       class="flex items-center px-4 py-3 rounded-lg {{ request()->routeIs('agent.rooms.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
-                        <i class="fas fa-hotel w-5 mr-3"></i>
-                        <span>Manage Rooms</span>
-                    </a>
+                    <!-- Example: If the agent offers hotel services -->
+                    @php
+                        $agent = Auth::user()->agent;
+                        $types = $agent?->business_type ?? [];
+                    @endphp
 
-                    <a href="#" class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100">
-                        <i class="fas fa-calendar-check w-5 mr-3"></i>
-                        <span>Bookings</span>
-                    </a>
+                    @if (in_array('hotel', $types))
+                        <div x-data="{ open: {{ request()->routeIs('agent.rooms.*') || request()->routeIs('agent.room-bookings.*') ? 'true' : 'false' }} }">
 
-                   
+                            <!-- Hotel Parent -->
+                            <button @click="open = !open"
+                                class="w-full flex items-center justify-between px-4 py-3 rounded-lg
+        {{ request()->routeIs('agent.rooms.*') || request()->routeIs('agent.room-bookings.*')
+            ? 'bg-blue-50 text-blue-600'
+            : 'text-gray-600 hover:bg-gray-100' }}">
+
+                                <div class="flex items-center">
+                                    <i class="fas fa-hotel w-5 mr-3"></i>
+                                    <span>Hotel</span>
+                                </div>
+
+                                <i class="fas fa-chevron-down text-xs transition-transform"
+                                    :class="{ 'rotate-180': open }"></i>
+                            </button>
+
+                            <!-- Hotel Dropdown -->
+                            <div x-show="open" x-collapse class="ml-6 mt-1 space-y-1">
+
+                                <!-- Manage Rooms -->
+                                <a href="{{ route('agent.rooms.index') }}"
+                                    class="flex items-center px-4 py-2 rounded-lg text-sm
+           {{ request()->routeIs('agent.rooms.*') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                                    <i class="fas fa-door-open w-4 mr-2"></i>
+                                    Manage Rooms
+                                </a>
+
+                                <!-- Room Bookings -->
+                                <a href="{{ route('agent.room-bookings.index') }} "
+                                    class="flex items-center px-4 py-2 rounded-lg text-sm
+           {{ request()->routeIs('agent.room-bookings.*') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                                    <i class="fas fa-calendar-check w-4 mr-2"></i>
+                                    Room Bookings
+                                </a>
+
+                            </div>
+                        </div>
+                    @endif
+
+
+                    <!-- Example: If the agent offers restaurant services -->
+                    @if (in_array('restaurant', $services))
+                        <a href="#"
+                            class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100">
+                            <i class="fas fa-utensils w-5 mr-3"></i>
+                            <span>Restaurant</span>
+                        </a>
+                    @endif
+
+                    <!-- Example: If the agent offers tour services -->
+                    @if (in_array('tour', $services))
+                        <a href="#"
+                            class="flex items-center px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100">
+                            <i class="fas fa-plane w-5 mr-3"></i>
+                            <span>Tour</span>
+                        </a>
+                    @endif
+
                 </nav>
             </div>
         </aside>
@@ -67,22 +129,25 @@
                         <!-- User Menu -->
                         <div class="flex items-center space-x-4">
                             <div x-data="{ dropdownOpen: false }" class="relative">
-                                <button @click="dropdownOpen = !dropdownOpen" class="flex items-center space-x-2 focus:outline-none">
+                                <button @click="dropdownOpen = !dropdownOpen"
+                                    class="flex items-center space-x-2 focus:outline-none">
                                     <img class="h-8 w-8 rounded-full border"
-                                         src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=3b82f6&color=fff"
-                                         alt="{{ Auth::user()->name }}">
+                                        src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=3b82f6&color=fff"
+                                        alt="{{ Auth::user()->name }}">
                                     <span class="hidden md:block text-gray-700">{{ Auth::user()->name }}</span>
                                     <i class="fas fa-chevron-down text-xs text-gray-400"></i>
                                 </button>
 
                                 <div x-show="dropdownOpen" @click.away="dropdownOpen = false"
-                                     class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1">
-                                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1">
+                                    <a href="{{ route('profile.edit') }}"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                         <i class="fas fa-user mr-2"></i> Profile
                                     </a>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
-                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                        <button type="submit"
+                                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
                                             <i class="fas fa-sign-out-alt mr-2"></i> Logout
                                         </button>
                                     </form>
@@ -104,4 +169,5 @@
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
+
 </html>
