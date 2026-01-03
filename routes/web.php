@@ -21,6 +21,11 @@ Route::get('/contact', function () {
     return view('contact');
 });
 
+Route::get('/hotels', function () {
+    return view('hotels');
+});
+
+
 
 //admin routes
 Route::middleware(['auth', 'role:admin'])->group(function () {
