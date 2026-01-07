@@ -27,12 +27,19 @@
 
                 <!-- Navigation -->
                 <nav class="flex-1 p-4 space-y-1">
+                    <!-- Dashboard -->
                     <a href="{{ url('/agent/dashboard') }}"
+<<<<<<< Updated upstream
                        class="flex items-center px-4 py-3 rounded-lg {{ request()->is('agent/dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
+=======
+                        class="flex items-center px-4 py-3 rounded-lg
+        {{ request()->is('agent/dashboard') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
+>>>>>>> Stashed changes
                         <i class="fas fa-home w-5 mr-3"></i>
                         <span>Dashboard</span>
                     </a>
 
+<<<<<<< Updated upstream
                     <a href="{{ route('agent.rooms.index') }}"
                        class="flex items-center px-4 py-3 rounded-lg {{ request()->routeIs('agent.rooms.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
                         <i class="fas fa-hotel w-5 mr-3"></i>
@@ -45,7 +52,93 @@
                     </a>
 
                    
+=======
+                    {{-- ================= HOTEL ================= --}}
+                    @if (in_array('hotel', $services))
+                        <div x-data="{ open: @js(request()->routeIs('agent.rooms.*') || request()->routeIs('agent.room-bookings.*')) }">
+                            <button @click="open = !open"
+                                class="w-full flex items-center justify-between px-4 py-3 rounded-lg
+                {{ request()->routeIs('agent.rooms.*') || request()->routeIs('agent.room-bookings.*')
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-600 hover:bg-gray-100' }}">
+
+                                <div class="flex items-center">
+                                    <i class="fas fa-hotel w-5 mr-3"></i>
+                                    <span>Hotel</span>
+                                </div>
+
+                                <i class="fas fa-chevron-down text-xs transition-transform"
+                                    :class="{ 'rotate-180': open }"></i>
+                            </button>
+
+                            <div x-show="open" x-transition class="ml-6 mt-1 space-y-1">
+                                <a href="{{ route('agent.rooms.index') }}"
+                                    class="flex items-center px-4 py-2 rounded-lg text-sm
+                    {{ request()->routeIs('agent.rooms.*') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                                    <i class="fas fa-door-open w-4 mr-2"></i>
+                                    Manage Rooms
+                                </a>
+
+                                <a href="{{ route('agent.room-bookings.index') }}"
+                                    class="flex items-center px-4 py-2 rounded-lg text-sm
+                    {{ request()->routeIs('agent.room-bookings.*')
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100' }}">
+                                    <i class="fas fa-calendar-check w-4 mr-2"></i>
+                                    Room Bookings
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- ================= RESTAURANT ================= --}}
+                    @if (in_array('restaurant', $services))
+                        <div x-data="{ open: @js(request()->routeIs('agent.restaurants.*') || request()->routeIs('agent.restaurant-bookings.*')) }">
+                            <button @click="open = !open"
+                                class="w-full flex items-center justify-between px-4 py-3 rounded-lg
+                {{ request()->routeIs('agent.restaurants*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
+
+                                <div class="flex items-center">
+                                    <i class="fas fa-utensils w-5 mr-3"></i>
+                                    <span>Restaurant</span>
+                                </div>
+
+                                <i class="fas fa-chevron-down text-xs transition-transform"
+                                    :class="{ 'rotate-180': open }"></i>
+                            </button>
+
+                            <div x-show="open" x-transition class="ml-6 mt-1 space-y-1">
+                                <a href=""
+                                    class="flex items-center px-4 py-2 rounded-lg text-sm
+                    {{ request()->routeIs('agent.restaurants.*') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                                    <i class="fas fa-chair w-4 mr-2"></i>
+                                    Restaurant Tables
+                                </a>
+
+                                <a href=""
+                                    class="flex items-center px-4 py-2 rounded-lg text-sm
+                    {{ request()->routeIs('agent.restaurant-bookings.*')
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100' }}">
+                                    <i class="fas fa-calendar-alt w-4 mr-2"></i>
+                                    Table Bookings
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- ================= TOUR ================= --}}
+                    @if (in_array('tour', $services))
+                        <a href="{{ route('agent.tours.index') }}"
+                            class="flex items-center px-4 py-3 rounded-lg
+            {{ request()->routeIs('agent.tours.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
+                            <i class="fas fa-plane w-5 mr-3"></i>
+                            <span>Tour</span>
+                        </a>
+                    @endif
+>>>>>>> Stashed changes
                 </nav>
+
             </div>
         </aside>
 

@@ -1,12 +1,27 @@
 <?php
 
+<<<<<<< Updated upstream
+=======
+use App\Http\Controllers\Agent\BookingController;
+use App\Http\Controllers\Agent\DashboardController;
+use App\Http\Controllers\Agent\RestaurantController;
+use App\Http\Controllers\Agent\RestaurantTableController;
+use App\Http\Controllers\Agent\RoomBookingController;
+>>>>>>> Stashed changes
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Frontend\AgentRequestController;
 use App\Http\Controllers\Agent\RoomController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::view('/', 'public.home');
+
+
+Route::get('/user/dashboard', function () {
+    return view('user.dashboard');
+});
+
+Route::get('/contact', function () {
+    return view('contact');
 });
 
 Route::get('/dashboard', function () {
@@ -29,6 +44,8 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->group(function () {
 
     Route::get('/dashboard', fn () => view('agent.dashboard'))->name('dashboard');
+
+
 
     // Room routes
     Route::resource('rooms', RoomController::class);

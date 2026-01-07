@@ -38,4 +38,18 @@ class Agent extends Model
     {
         return $this->belongsTo(User::class);
     }
+<<<<<<< Updated upstream
+=======
+
+    public function roomBookings()
+    {
+        return $this->hasMany(RoomBooking::class);
+    }
+
+    public function restaurants()
+    {
+        return $this->belongsToMany(Restaurant::class,'agent_restaurant');
+    }
+
+>>>>>>> Stashed changes
 }
