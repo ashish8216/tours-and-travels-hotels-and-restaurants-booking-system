@@ -21,7 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-         'role',
+        'role',
         'email_verified_at',
     ];
 
@@ -58,4 +58,8 @@ class User extends Authenticatable
         return $this->hasMany(RoomBooking::class);
     }
 
+    public function tourBookings()
+    {
+        return $this->hasMany(TourBooking::class);
+    }
 }

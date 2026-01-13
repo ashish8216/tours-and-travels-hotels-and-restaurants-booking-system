@@ -5,12 +5,19 @@ use App\Http\Controllers\Agent\RoomBookingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Frontend\AgentRequestController;
 use App\Http\Controllers\Agent\RoomController;
+use App\Http\Controllers\Agent\TourBookingController;
+use App\Http\Controllers\Agent\TourController;
+use App\Http\Controllers\Agent\TourDateController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 Route::get('/', function () {
-    return view('welcome');
+    return view('frontend.home');
 });
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -56,6 +63,34 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 
     Route::delete('/rooms/{room}/images/{image}', [RoomController::class, 'destroyImage'])
         ->name('rooms.images.destroy');
+
+    // Tour Management
+    Route::resource('tours', TourController::class);
+
+    // Tour Dates Management
+    Route::prefix('tours/{tour}/dates')->name('tours.dates.')->group(function () {
+        Route::get('/', [TourDateController::class, 'index'])->name('index');
+        Route::get('/create', [TourDateController::class, 'create'])->name('create');
+        Route::post('/', [TourDateController::class, 'store'])->name('store');
+        Route::get('/{date}/edit', [TourDateController::class, 'edit'])->name('edit');
+        Route::put('/{date}', [TourDateController::class, 'update'])->name('update');
+        Route::delete('/{date}', [TourDateController::class, 'destroy'])->name('destroy');
+
+        // Bulk add dates
+        Route::get('/bulk-create', [TourDateController::class, 'bulkCreate'])->name('bulk-create');
+        Route::post('/bulk-store', [TourDateController::class, 'bulkStore'])->name('bulk-store');
+    });
+
+    // Tour Bookings Management
+    Route::prefix('tour-bookings')->name('tour-bookings.')->group(function () {
+        Route::get('/', [TourBookingController::class, 'index'])->name('index');
+        Route::get('/create', [TourBookingController::class, 'create'])->name('create');
+        Route::post('/', [TourBookingController::class, 'store'])->name('store');
+        Route::get('/{booking}', [TourBookingController::class, 'show'])->name('show');
+        Route::post('/{booking}/confirm', [TourBookingController::class, 'confirm'])->name('confirm');
+        Route::post('/{booking}/cancel', [TourBookingController::class, 'cancel'])->name('cancel');
+        Route::patch('/{booking}/notes', [TourBookingController::class, 'updateNotes'])->name('update-notes');
+    });
 });
 
 Route::get('/become-agent', function () {
@@ -64,5 +99,17 @@ Route::get('/become-agent', function () {
 
 Route::post('/become-agent', [AgentRequestController::class, 'store'])
     ->name('agent.request.store');
+
+//frontend routes
+// Route::get('/', [HomeController::class, 'index'])->name('home');
+// Route::get('/search', [SearchController::class, 'index'])->name('search');
+// Route::get('/tours', [TourController::class, 'index'])->name('tours');
+// Route::get('/hotels', [HotelController::class, 'index'])->name('hotels');
+// Route::get('/restaurants', [RestaurantController::class, 'index'])->name('restaurants');
+// Route::get('/about', [PageController::class, 'about'])->name('about');
+// Route::get('/blog', [BlogController::class, 'index'])->name('blog');
+// Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+// Route::get('/packages', [PackageController::class, 'index'])->name('packages');
+// Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('newsletter.subscribe');
 
 require __DIR__ . '/auth.php';

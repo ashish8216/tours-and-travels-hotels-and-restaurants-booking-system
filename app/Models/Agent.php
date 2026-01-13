@@ -26,10 +26,10 @@ class Agent extends Model
     protected static function booted()
     {
         static::deleting(function (Agent $agent) {
-             logger('AGENT DELETING EVENT FIRED', [
-            'agent_id' => $agent->id,
-            'user_id' => $agent->user_id,
-        ]);
+            logger('AGENT DELETING EVENT FIRED', [
+                'agent_id' => $agent->id,
+                'user_id' => $agent->user_id,
+            ]);
         });
     }
 
@@ -44,4 +44,15 @@ class Agent extends Model
         return $this->hasMany(RoomBooking::class);
     }
 
+    public function tours()
+    {
+        return $this->hasMany(Tour::class);
+    }
+
+    public function tourBookings()
+    {
+        return $this->hasMany(TourBooking::class);
+    }
+
+    
 }
