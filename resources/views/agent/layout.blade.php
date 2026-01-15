@@ -74,10 +74,12 @@
 
                     <!-- Restaurant Service Section -->
                     @if (in_array('restaurant', $services))
-                        <div x-data="{ restaurantOpen: {{ request()->routeIs('agent.restaurant.*') ? 'true' : 'false' }} }">
+                        <div x-data="{ restaurantOpen: {{ request()->routeIs('agent.restaurants.*') || request()->routeIs('agent.restaurant.reservations.*') ? 'true' : 'false' }} }">
                             <button @click="restaurantOpen = !restaurantOpen"
                                 class="w-full flex items-center justify-between px-4 py-3 rounded-lg
-                                    {{ request()->routeIs('agent.restaurant.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
+                {{ request()->routeIs('agent.restaurants.*') || request()->routeIs('agent.restaurant.reservations.*')
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-600 hover:bg-gray-100' }}">
                                 <div class="flex items-center">
                                     <i class="fas fa-utensils w-5 mr-3"></i>
                                     <span>Restaurant</span>
@@ -87,12 +89,74 @@
                             </button>
 
                             <div x-show="restaurantOpen" x-collapse class="ml-6 mt-1 space-y-1">
-                                <!-- Add restaurant routes when available -->
-                                <a href="#"
-                                    class="flex items-center px-4 py-2 rounded-lg text-sm text-gray-400 cursor-not-allowed">
-                                    <i class="fas fa-chair w-4 mr-2"></i>
-                                    Coming Soon
+                                <a href="{{ route('agent.restaurants.index') }}"
+                                    class="flex items-center px-4 py-2 rounded-lg text-sm
+                    {{ request()->routeIs('agent.restaurants.index') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                                    <i class="fas fa-store w-4 mr-2"></i>
+                                    Manage Restaurant
                                 </a>
+
+                                <!-- Manage Tables - Always visible -->
+                                @php
+                                    $restaurantId = null;
+
+                                    // Try to get restaurant ID from current route if we're on tables/reservations pages
+if (
+    request()->routeIs('agent.restaurants.tables.*') ||
+    request()->routeIs('agent.restaurants.reservations.*') ||
+    request()->routeIs('agent.restaurants.show')
+) {
+    // Check if restaurant parameter exists in the route
+    $routeRestaurant = request()->route('restaurant');
+                                        if ($routeRestaurant && is_object($routeRestaurant)) {
+                                            $restaurantId = $routeRestaurant->id;
+                                        } elseif ($routeRestaurant && is_numeric($routeRestaurant)) {
+                                            $restaurantId = $routeRestaurant;
+                                        }
+                                    }
+
+                                    // If still no restaurant ID and agent exists with restaurants
+                                    if (!$restaurantId && Auth::user()->agent) {
+                                        // Load restaurants relationship if not already loaded
+                                        $agentRestaurants = Auth::user()->agent->restaurants;
+                                        if ($agentRestaurants && $agentRestaurants->count() > 0) {
+                                            $restaurantId = $agentRestaurants->first()->id;
+                                        }
+                                    }
+                                @endphp
+
+                                @if ($restaurantId && Route::has('agent.restaurants.tables.index'))
+                                    <a href="{{ route('agent.restaurants.tables.index', ['restaurant' => $restaurantId]) }}"
+                                        class="flex items-center px-4 py-2 rounded-lg text-sm
+                        {{ request()->routeIs('agent.restaurants.tables.*') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                                        <i class="fas fa-chair w-4 mr-2"></i>
+                                        Manage Tables
+                                    </a>
+                                @elseif (Auth::user()->agent && Auth::user()->agent->restaurants && Auth::user()->agent->restaurants->count() > 0)
+                                    <!-- Show disabled link if agent has restaurants but no ID could be determined -->
+                                    <span
+                                        class="flex items-center px-4 py-2 rounded-lg text-sm text-gray-400 cursor-not-allowed">
+                                        <i class="fas fa-chair w-4 mr-2"></i>
+                                        Manage Tables
+                                    </span>
+                                @endif
+
+                                <!-- Reservations - Always visible -->
+                                @if ($restaurantId && Route::has('agent.restaurants.reservations.index'))
+                                    <a href="{{ route('agent.restaurants.reservations.index', ['restaurant' => $restaurantId]) }}"
+                                        class="flex items-center px-4 py-2 rounded-lg text-sm
+                        {{ request()->routeIs('agent.restaurants.reservations.*') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100' }}">
+                                        <i class="fas fa-calendar-check w-4 mr-2"></i>
+                                        Reservations
+                                    </a>
+                                @elseif (Auth::user()->agent && Auth::user()->agent->restaurants && Auth::user()->agent->restaurants->count() > 0)
+                                    <!-- Show disabled link if agent has restaurants but no ID could be determined -->
+                                    <span
+                                        class="flex items-center px-4 py-2 rounded-lg text-sm text-gray-400 cursor-not-allowed">
+                                        <i class="fas fa-calendar-check w-4 mr-2"></i>
+                                        Reservations
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     @endif
@@ -143,15 +207,6 @@
                         </div>
                     @endif
 
-                    {{-- <!-- Common Settings -->
-                    <div class="pt-4 border-t border-gray-200">
-                        <a href="{{ route('profile.edit') }}"
-                            class="flex items-center px-4 py-3 rounded-lg {{ request()->routeIs('profile.edit') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100' }}">
-                            <i class="fas fa-user w-5 mr-3"></i>
-                            <span>Profile</span>
-                        </a>
-                    </div> --}}
-
                 </nav>
             </div>
         </aside>
@@ -173,6 +228,10 @@
                                     <h1 class="text-lg font-medium text-gray-800">Hotel Management</h1>
                                 @elseif(request()->routeIs('agent.room-bookings.*'))
                                     <h1 class="text-lg font-medium text-gray-800">Room Bookings</h1>
+                                @elseif(request()->routeIs('agent.restaurants.*'))
+                                    <h1 class="text-lg font-medium text-gray-800">Restaurant Management</h1>
+                                @elseif(request()->routeIs('agent.restaurant.reservations.*') || request()->routeIs('agent.restaurant-bookings.*'))
+                                    <h1 class="text-lg font-medium text-gray-800">Restaurant Reservations</h1>
                                 @elseif(request()->routeIs('agent.tours.*'))
                                     <h1 class="text-lg font-medium text-gray-800">Tour Management</h1>
                                 @elseif(request()->routeIs('agent.tour-bookings.*'))
@@ -185,24 +244,6 @@
 
                         <!-- User Menu -->
                         <div class="flex items-center space-x-4">
-                            {{-- <!-- Notifications (optional) -->
-                            <div x-data="{ notificationsOpen: false }" class="relative">
-                                <button @click="notificationsOpen = !notificationsOpen"
-                                    class="relative text-gray-500 hover:text-gray-700">
-                                    <i class="fas fa-bell text-lg"></i>
-                                    <span class="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-                                </button>
-                                <div x-show="notificationsOpen" @click.away="notificationsOpen = false"
-                                    class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border py-2">
-                                    <div class="px-4 py-2 text-sm text-gray-500 border-b">
-                                        Notifications
-                                    </div>
-                                    <div class="px-4 py-3 text-sm text-gray-600">
-                                        No new notifications
-                                    </div>
-                                </div>
-                            </div> --}}
-
                             <!-- User Dropdown -->
                             <div x-data="{ dropdownOpen: false }" class="relative">
                                 <button @click="dropdownOpen = !dropdownOpen"
@@ -234,7 +275,7 @@
                 </div>
             </header>
 
-            <!-- Breadcrumbs (optional) -->
+            <!-- Breadcrumbs -->
             @if (!request()->routeIs('agent.dashboard'))
                 <div class="bg-gray-50 border-b border-gray-200 px-4 md:px-6 py-2">
                     <nav class="flex" aria-label="Breadcrumb">
@@ -252,6 +293,14 @@
                                     <span class="text-sm text-gray-500">Hotel</span>
                                 </li>
                             @endif
+                            @if (request()->routeIs('agent.restaurants.*') ||
+                                    request()->routeIs('agent.restaurant.reservations.*') ||
+                                    request()->routeIs('agent.restaurant-bookings.*'))
+                                <li class="inline-flex items-center">
+                                    <i class="fas fa-chevron-right text-gray-400 mx-1"></i>
+                                    <span class="text-sm text-gray-500">Restaurant</span>
+                                </li>
+                            @endif
                             @if (request()->routeIs('agent.tours.*'))
                                 <li class="inline-flex items-center">
                                     <i class="fas fa-chevron-right text-gray-400 mx-1"></i>
@@ -266,7 +315,21 @@
             <!-- Main Content Area -->
             <main class="flex-1 p-4 md:p-6">
                 <div class="max-w-7xl mx-auto">
-                    <!-- Page Title -->
+                    <!-- Page Title for Restaurant Tables -->
+                    @if (request()->routeIs('agent.restaurants.tables.*'))
+                        @php
+                            $restaurant = request()->route('restaurant');
+                        @endphp
+                        @if ($restaurant)
+                            <div class="mb-6">
+                                <h1 class="text-2xl font-bold text-gray-800 mb-2">Restaurant Tables:
+                                    {{ $restaurant->name }}</h1>
+                                <p class="text-gray-600">Manage tables for {{ $restaurant->name }}</p>
+                            </div>
+                        @endif
+                    @endif
+
+                    <!-- Page Title for Tour Dates -->
                     @if (request()->routeIs('agent.tours.dates.*'))
                         @php
                             $tour = request()->route('tour');

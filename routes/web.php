@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Agent\DashboardController;
+use App\Http\Controllers\Agent\RestaurantController;
+use App\Http\Controllers\Agent\RestaurantReservationController;
+use App\Http\Controllers\Agent\RestaurantTableController;
 use App\Http\Controllers\Agent\RoomBookingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Frontend\AgentRequestController;
@@ -63,6 +66,35 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->grou
 
     Route::delete('/rooms/{room}/images/{image}', [RoomController::class, 'destroyImage'])
         ->name('rooms.images.destroy');
+
+    // Restaurant Management
+    Route::prefix('restaurants')->name('restaurants.')->group(function () {
+        Route::get('/', [RestaurantController::class, 'index'])->name('index');
+        Route::get('/{restaurant}', [RestaurantController::class, 'show'])->name('show');
+        Route::get('/{restaurant}/edit', [RestaurantController::class, 'edit'])->name('edit');
+        Route::put('/{restaurant}', [RestaurantController::class, 'update'])->name('update');
+
+        // Tables
+        Route::prefix('{restaurant}/tables')->name('tables.')->group(function () {
+            Route::get('/', [RestaurantTableController::class, 'index'])->name('index');
+            Route::get('/create', [RestaurantTableController::class, 'create'])->name('create');
+            Route::post('/', [RestaurantTableController::class, 'store'])->name('store');
+            Route::get('/{table}/edit', [RestaurantTableController::class, 'edit'])->name('edit');
+            Route::put('/{table}', [RestaurantTableController::class, 'update'])->name('update');
+            Route::delete('/{table}', [RestaurantTableController::class, 'destroy'])->name('destroy');
+        });
+
+        // Reservations
+        Route::prefix('{restaurant}/reservations')->name('reservations.')->group(function () {
+            Route::get('/', [RestaurantReservationController::class, 'index'])->name('index');
+            Route::get('/create', [RestaurantReservationController::class, 'create'])->name('create');
+            Route::post('/', [RestaurantReservationController::class, 'store'])->name('store');
+            Route::get('/{reservation}', [RestaurantReservationController::class, 'show'])->name('show');
+            Route::post('/{reservation}/confirm', [RestaurantReservationController::class, 'confirm'])->name('confirm');
+            Route::post('/{reservation}/cancel', [RestaurantReservationController::class, 'cancel'])->name('cancel');
+            Route::patch('/{reservation}/notes', [RestaurantReservationController::class, 'updateNotes'])->name('update-notes');
+        });
+    });
 
     // Tour Management
     Route::resource('tours', TourController::class);
